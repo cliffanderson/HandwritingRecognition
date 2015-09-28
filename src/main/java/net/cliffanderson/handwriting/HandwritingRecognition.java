@@ -2,6 +2,9 @@ package net.cliffanderson.handwriting;
 
 import org.apache.commons.io.IOUtils;
 
+import javax.imageio.ImageIO;
+import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.io.*;
 import java.util.Arrays;
 
@@ -15,17 +18,26 @@ public class HandwritingRecognition
         HandwritingRecognition hr = new HandwritingRecognition();
 
         hr.decodeImages(new File("C:\\Users\\andersonc12\\Desktop\\HandwritingRecognition" +
-                "\\train-images.idx3-ubyte"), null);
+                "\\train-images.idx3-ubyte"),
+                new File("C:\\Users\\andersonc12\\HandwritingImages\\"));
     }
 
     public void decodeImages(File encodedFile, File outputDir)
     {
+        //quick check
+        if(!outputDir.exists())
+        {
+            outputDir.mkdirs();
+        }
+
         //setup input stream
         InputStream fileIn;
+        DataInputStream in;
 
         try
         {
             fileIn = new FileInputStream(encodedFile);
+            in = new DataInputStream(fileIn);
         }
         catch (FileNotFoundException e)
         {
@@ -37,10 +49,45 @@ public class HandwritingRecognition
 
 
         //read in all the bytes
-        byte[] data;
         try
         {
-            data = IOUtils.toByteArray(fileIn);
+            //read in magic number
+            int magic = in.readInt();
+            System.out.println("Magic number for encoded image file: " + magic);
+
+            //read dataset info
+            int numberOfImages = in.readInt();
+            int imageWidth = in.readInt();
+            int imageHeight = in.readInt();
+
+            //create all the images
+            for(int img = 0; img < numberOfImages; img++)
+            {
+                //create an image
+                BufferedImage image = new BufferedImage(imageWidth, imageHeight, BufferedImage.TYPE_INT_RGB);
+                for(int y = 0; y < imageHeight; y++)
+                {
+                    for(int x = 0; x < imageWidth; x++)
+                    {
+                        byte color = in.readByte(); //color of this pixel
+
+                        if(color < 0)
+                        {
+                            color += 128; //we want unsigned bytes
+                        }
+
+                        image.setRGB(x, y, new Color(color, color, color).getRGB()); //all rgb the same value for grayscale
+                    }
+                }
+
+                ImageIO.write(image, "PNG", new File(outputDir, String.valueOf(System.currentTimeMillis()) + ".png"));
+
+                if((img + 1) % 1000 == 0)
+                {
+                    System.out.println((img + 1) + " images complete");
+                }
+            }
+
         }
         catch (IOException e)
         {
@@ -48,8 +95,5 @@ public class HandwritingRecognition
             e.printStackTrace();
             return;
         }
-
-        //we have the data, build images
-        System.out.println(Arrays.toString(Arrays.copyOf(data, 10)));
     }
 }
