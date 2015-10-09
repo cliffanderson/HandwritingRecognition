@@ -1,5 +1,6 @@
 package net.cliffanderson.handwriting;
 
+import net.cliffanderson.wekatest.WekaTest;
 import org.apache.commons.io.FileUtils;
 
 import javax.imageio.ImageIO;
@@ -23,11 +24,29 @@ public class HandwritingRecognition
     {
         timeProgram();
         setup();
+
+        try
+        {
+            //System.out.println("Classify test: ");
+            //WekaTest.classifyTest(new File("C:\\Users\\Cliff\\IdeaProjects\\HandwritingRecognition\\lib\\diabetes.arff"));
+
+            System.out.println("Clustering test: ");
+            WekaTest.clusterTest(new File("C:\\Users\\Cliff\\IdeaProjects\\HandwritingRecognition\\lib\\diabetes.arff"));
+
+            System.out.println("Neural network test: ");
+            WekaTest.neuralNetworkTest(new File("C:\\Users\\Cliff\\IdeaProjects\\HandwritingRecognition\\lib\\diabetes.arff"));
+        }
+        catch (Exception e)
+        {
+          e.printStackTrace();
+        }
+        /*
         HandwritingRecognition hr = new HandwritingRecognition();
 
         hr.decodeImages(new File(USER_HOME + File.separator + "dataset-images"),
                 new File(USER_HOME + File.separator + "dataset-image-labels"),
                 new File(USER_HOME + File.separator + "handwriting-images"));
+        */
     }
 
     public void decodeImages(File encodedImages, File encodedImageLabels, File outputDir)
