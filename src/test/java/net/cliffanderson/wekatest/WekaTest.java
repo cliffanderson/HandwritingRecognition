@@ -30,7 +30,7 @@ public class WekaTest
         //train NaiveBayes
         NaiveBayesUpdateable nb = new NaiveBayesUpdateable();
         nb.buildClassifier(structure);
-        Instance current;
+        GetInstance.Instance current;
         while((current = loader.getNextInstance(structure)) != null)
         {
             nb.updateClassifier(current);

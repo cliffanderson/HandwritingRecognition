@@ -30,7 +30,9 @@ public class HandwritingRecognition
 
         hr.decodeImages(new File(USER_HOME + File.separator + "dataset-images"),
                 new File(USER_HOME + File.separator + "dataset-image-labels"),
-                new File(USER_HOME + File.separator + "handwriting-images"));
+                new File(USER_HOME + File.separator + "handwriting-images"),
+                false,
+                true);
         */
     }
 
@@ -54,8 +56,9 @@ public class HandwritingRecognition
             downloadFile(imageDataSetLabels, encodedImageLabels);
         }
 
-        //delete sub folders if they exist, then recreate them
-        for(int digit = 0; digit <= 9; digit++)
+        //delete sub folders if they exist, then recreate them, but
+        //only if we chose to create images
+        for(int digit = 0; digit <= 9 && createImages; digit++)
         {
             File folder = new File(outputDir, String.valueOf(digit));
             if(folder.exists())
@@ -103,7 +106,12 @@ public class HandwritingRecognition
                 //arff file setup
                 out.write("@RELATION handwriting");
                 out.write("@ATTRIBUTE digit NUMERIC");
-                out.write("@ATTRIBUTE pixels STRING");
+
+                //every pixel gets it's own attribute
+                for(int i = 0; i < 28 * 28; i++)
+                {
+                    out.write("@ATTRIBUTE pixel NUMERIC");
+                }
             }
         }
         catch (FileNotFoundException e)
@@ -118,10 +126,6 @@ public class HandwritingRecognition
             e.printStackTrace();
             return;
         }
-
-
-
-
 
         //read in all the bytes
 
@@ -170,6 +174,8 @@ public class HandwritingRecognition
 
                 if(createArffFile)
                 {
+                    out.write(labelIn.readByte());
+
                     //loop through data
                     for(int y = 0; y < imageHeight; y++)
                     {
@@ -180,12 +186,10 @@ public class HandwritingRecognition
                                 color += 128; //we want unsigned bytes
                             }
 
-
+                            out.write("," + String.valueOf(color));
                         }
-
                     }
-
-
+                    out.write('\n');
                 }
             }
 
