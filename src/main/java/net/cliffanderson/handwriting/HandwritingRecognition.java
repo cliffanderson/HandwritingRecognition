@@ -1,6 +1,5 @@
 package net.cliffanderson.handwriting;
 
-import net.cliffanderson.wekatest.WekaTest;
 import org.apache.commons.io.FileUtils;
 
 import javax.imageio.ImageIO;
@@ -25,21 +24,7 @@ public class HandwritingRecognition
         timeProgram();
         setup();
 
-        try
-        {
-            //System.out.println("Classify test: ");
-            //WekaTest.classifyTest(new File("C:\\Users\\Cliff\\IdeaProjects\\HandwritingRecognition\\lib\\diabetes.arff"));
 
-            System.out.println("Clustering test: ");
-            WekaTest.clusterTest(new File("C:\\Users\\Cliff\\IdeaProjects\\HandwritingRecognition\\lib\\diabetes.arff"));
-
-            System.out.println("Neural network test: ");
-            WekaTest.neuralNetworkTest(new File("C:\\Users\\Cliff\\IdeaProjects\\HandwritingRecognition\\lib\\diabetes.arff"));
-        }
-        catch (Exception e)
-        {
-          e.printStackTrace();
-        }
         /*
         HandwritingRecognition hr = new HandwritingRecognition();
 
@@ -49,8 +34,10 @@ public class HandwritingRecognition
         */
     }
 
-    public void decodeImages(File encodedImages, File encodedImageLabels, File outputDir)
+    public void decodeImages(File encodedImages, File encodedImageLabels, File outputDir, boolean createImages, boolean createArffFile)
     {
+        if(!createImages && !createArffFile) return;
+
         //quick check
         if(!outputDir.exists())
         {
@@ -98,6 +85,9 @@ public class HandwritingRecognition
         InputStream labelFileIn;
         DataInputStream labelIn;
 
+        File arffFile = new File(outputDir + File.separator + "handwriting.arff");
+        BufferedWriter out;
+
         try
         {
             imageFileIn = new FileInputStream(encodedImages);
@@ -105,6 +95,16 @@ public class HandwritingRecognition
 
             labelFileIn = new FileInputStream(encodedImageLabels);
             labelIn = new DataInputStream(labelFileIn);
+
+            out = new BufferedWriter(new FileWriter(arffFile));
+
+            if(createArffFile)
+            {
+                //arff file setup
+                out.write("@RELATION handwriting");
+                out.write("@ATTRIBUTE digit NUMERIC");
+                out.write("@ATTRIBUTE pixels STRING");
+            }
         }
         catch (FileNotFoundException e)
         {
@@ -112,6 +112,14 @@ public class HandwritingRecognition
             e.printStackTrace();
             return;
         }
+        catch (IOException e)
+        {
+            System.err.println("The arff file writer could not be created");
+            e.printStackTrace();
+            return;
+        }
+
+
 
 
 
@@ -133,33 +141,57 @@ public class HandwritingRecognition
             int imageWidth = imageIn.readInt();
             int imageHeight = imageIn.readInt();
 
+
             //create all the images
             for(int img = 0; img < numberOfImages || img < numberOfLabels; img++)
             {
-                //create an image
-                BufferedImage image = new BufferedImage(imageWidth, imageHeight, BufferedImage.TYPE_INT_RGB);
-                for(int y = 0; y < imageHeight; y++)
-                {
-                    for(int x = 0; x < imageWidth; x++)
-                    {
-                        byte color = imageIn.readByte(); //color of this pixel
+                if(createImages) {
+                    //create an image
+                    BufferedImage image = new BufferedImage(imageWidth, imageHeight, BufferedImage.TYPE_INT_RGB);
+                    for (int y = 0; y < imageHeight; y++) {
+                        for (int x = 0; x < imageWidth; x++) {
+                            byte color = imageIn.readByte(); //color of this pixel
 
-                        if(color < 0)
-                        {
-                            color += 128; //we want unsigned bytes
+                            if (color < 0) {
+                                color += 128; //we want unsigned bytes
+                            }
+
+                            image.setRGB(x, y, new Color(color, color, color).getRGB()); //all rgb the same value for grayscale
                         }
+                    }
 
-                        image.setRGB(x, y, new Color(color, color, color).getRGB()); //all rgb the same value for grayscale
+                    String label = String.valueOf(labelIn.readByte());
+                    ImageIO.write(image, "PNG", new File(outputDir + File.separator + label + File.separator + String.valueOf(Math.random()) + ".png"));
+
+                    if ((img + 1) % 1000 == 0) {
+                        System.out.println((img + 1) + " images complete");
                     }
                 }
 
-                String label = String.valueOf(labelIn.readByte());
-                ImageIO.write(image, "PNG", new File(outputDir + File.separator + label + File.separator + String.valueOf(Math.random()) + ".png"));
-
-                if((img + 1) % 1000 == 0)
+                if(createArffFile)
                 {
-                    System.out.println((img + 1) + " images complete");
+                    //loop through data
+                    for(int y = 0; y < imageHeight; y++)
+                    {
+                        for(int x = 0; x < imageWidth; x++) {
+                            byte color = imageIn.readByte(); //color of this pixel
+
+                            if (color < 0) {
+                                color += 128; //we want unsigned bytes
+                            }
+
+
+                        }
+
+                    }
+
+
                 }
+            }
+
+            if(out != null) {
+                out.flush();
+                out.close();
             }
 
         }
