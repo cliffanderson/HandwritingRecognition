@@ -30,7 +30,7 @@ public class WekaTest
         //train NaiveBayes
         NaiveBayesUpdateable nb = new NaiveBayesUpdateable();
         nb.buildClassifier(structure);
-        GetInstance.Instance current;
+        Instance current;
         while((current = loader.getNextInstance(structure)) != null)
         {
             nb.updateClassifier(current);
@@ -67,15 +67,20 @@ public class WekaTest
         loader.setFile(arffFile);
         Instances train = loader.getDataSet();
         train.setClassIndex(train.numAttributes() - 1);
+        System.out.println("Data loaded");
 
         //Instance of neural network
         MultilayerPerceptron mlp = new MultilayerPerceptron();
+        System.out.println("Neural network instance created");
 
         //Parameters
-        mlp.setLearningRate(0.1);
-        mlp.setMomentum(0.2);
-        mlp.setTrainingTime(2000);
-        mlp.setHiddenLayers("3");
+        mlp.setLearningRate(0.05);
+        mlp.setMomentum(0.005);
+        mlp.setTrainingTime(200);
+        mlp.setHiddenLayers("10");
+        System.out.println("Parameters set");
+
+        System.out.println("Training network...\n\n");
         mlp.buildClassifier(train);
 
 
