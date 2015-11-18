@@ -9,8 +9,6 @@ import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-import net.cliffanderson.wekatest.WekaTest;
-
 /**
  * Created by andersonc12 on 9/26/2015.
  */
