@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -12,26 +13,37 @@ import java.util.Map;
  */
 public class CustomClassifyTest
 {
-    static void neuralNetwork(File dataFile)
+    public static void neuralNetwork(File dataFile, int epochs)
     {
         Map<String, int[]> pixels = loadData(dataFile, 49);
 
-        double[] hiddenNodes = new double[49];
+        double[] hiddenNodes = new double[9];
         double[] resultNodes = new double[10];
 
         //populate the hidden nodes with weights
         populateWeights(hiddenNodes);
+        System.out.println("Starting: " + Arrays.toString(hiddenNodes));
 
-        //for every input vector of pixels values, train the hidden layer
-        for(int[] inputVector : pixels.values())
-        {
-            for(int i = 0; i < inputVector.length || i < hiddenNodes.length; i++)
-            {
-                hiddenNodes[i] = sigmoid();
+        //times to train it
+        for(int training = 0; training < epochs; training++) {
+            //for every input vector of pixels values, train the hidden layer
+            for (int hidden = 0; hidden < hiddenNodes.length; hidden++) {
+                double sum = 0.0;
+
+                for (int[] input : pixels.values()) {
+                    for (int pixel = 0; pixel < input.length; pixel++) {
+                        sum += pixel * hiddenNodes[hidden];
+                    }
+
+
+                }
+                System.out.println("Hidden " + hidden + "   sum " + sum);
+                hiddenNodes[hidden] = sigmoid(sum /*sum of every value of input * hiddenNodes[hidden]*/);
+
             }
+            System.out.println("Ending: " + Arrays.toString(hiddenNodes));
         }
-
-
+        System.out.println("Final ending: " + Arrays.toString(hiddenNodes));
     }
 
     static double sigmoid(double v)
@@ -43,7 +55,7 @@ public class CustomClassifyTest
     {
         for(int i = 0; i < hiddenNodes.length; i++)
         {
-            hiddenNodes[i] = (Math.random() * 0.005);
+            hiddenNodes[i] = (Math.random() * 0.000005);
         }
     }
 

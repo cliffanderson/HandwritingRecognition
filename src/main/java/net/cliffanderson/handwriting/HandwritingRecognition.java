@@ -1,5 +1,6 @@
 package net.cliffanderson.handwriting;
 
+import net.cliffanderson.classifytest.CustomClassifyTest;
 import org.apache.commons.io.FileUtils;
 
 import javax.imageio.ImageIO;
@@ -48,8 +49,8 @@ public class HandwritingRecognition {
                 false);
         */
         try {
-            createDataFile(TRAIN_IMAGES, TRAIN_LABELS, new File(USER_HOME + File.separator + "desktop" + File.separator + "customDataFile.txt"));
-           // WekaTest.neuralNetworkTest(new File(USER_HOME + File.separator + "handwriting-images" + File.separator + "handwriting.arff"));
+            //createDataFile(TRAIN_IMAGES, TRAIN_LABELS, new File(USER_HOME + File.separator + "desktop" + File.separator + "customDataFile.txt"));
+            CustomClassifyTest.neuralNetwork(new File(USER_HOME + File.separator + "desktop" + File.separator + "customDataFile.txt"), 2);
         } catch (Exception e) {
             e.printStackTrace();
         }
