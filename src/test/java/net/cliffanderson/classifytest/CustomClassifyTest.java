@@ -17,14 +17,18 @@ public class CustomClassifyTest
     {
         Map<String, int[]> pixels = loadData(dataFile, 49);
 
+
         double[] hiddenNodes = new double[9];
+        double[] hiddenNodeWeights = new double[9];
+
         double[] resultNodes = new double[10];
+        double[] resultNodeWeights = new double[10];
 
         //populate the hidden nodes with weights
-        populateWeights(hiddenNodes);
-        System.out.println("Starting: " + Arrays.toString(hiddenNodes));
+        populateWeights(hiddenNodeWeights);
+        populateWeights(resultNodeWeights);
 
-        //times to train it
+        //train all the hidden nodes
         for(int training = 0; training < epochs; training++) {
             //for every input vector of pixels values, train the hidden layer
             for (int hidden = 0; hidden < hiddenNodes.length; hidden++) {
@@ -32,18 +36,32 @@ public class CustomClassifyTest
 
                 for (int[] input : pixels.values()) {
                     for (int pixel = 0; pixel < input.length; pixel++) {
-                        sum += pixel * hiddenNodes[hidden];
+                        sum += input[pixel] * hiddenNodeWeights[hidden];
                     }
-
-
                 }
-                System.out.println("Hidden " + hidden + "   sum " + sum);
                 hiddenNodes[hidden] = sigmoid(sum /*sum of every value of input * hiddenNodes[hidden]*/);
 
             }
-            System.out.println("Ending: " + Arrays.toString(hiddenNodes));
+
+            System.out.println("Hidden node values after " + epochs + " epochs: " + Arrays.toString(hiddenNodes));
+
+
+
+            //train all the result nodes
+            for(int result = 0; result < resultNodes.length; result++)
+            {
+                double sum = 0.0;
+
+                for(int i = 0; i < hiddenNodes.length; i++)
+                {
+                    sum += hiddenNodes[i] * resultNodeWeights[result];
+                }
+
+                resultNodes[result] = sum;
+            }
+
+            System.out.println("Result node values after " + epochs + " epochs: " + Arrays.toString(resultNodes));
         }
-        System.out.println("Final ending: " + Arrays.toString(hiddenNodes));
     }
 
     static double sigmoid(double v)
@@ -55,7 +73,7 @@ public class CustomClassifyTest
     {
         for(int i = 0; i < hiddenNodes.length; i++)
         {
-            hiddenNodes[i] = (Math.random() * 0.000005);
+            hiddenNodes[i] = (Math.random() * 0.0005);
         }
     }
 

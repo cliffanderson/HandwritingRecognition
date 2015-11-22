@@ -50,7 +50,8 @@ public class HandwritingRecognition {
         */
         try {
             //createDataFile(TRAIN_IMAGES, TRAIN_LABELS, new File(USER_HOME + File.separator + "desktop" + File.separator + "customDataFile.txt"));
-            CustomClassifyTest.neuralNetwork(new File(USER_HOME + File.separator + "desktop" + File.separator + "customDataFile.txt"), 2);
+            CustomClassifyTest.neuralNetwork(new File(USER_HOME + File.separator + "desktop" + File.separator + "customDataFile.txt"),
+                    1);
         } catch (Exception e) {
             e.printStackTrace();
         }
