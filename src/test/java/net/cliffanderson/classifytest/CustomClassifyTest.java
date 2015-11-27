@@ -1,67 +1,195 @@
 package net.cliffanderson.classifytest;
 
+import jdk.internal.util.xml.impl.Input;
+import net.cliffanderson.classifytest.obj.InputVector;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by andersonc12 on 11/6/2015.
  */
 public class CustomClassifyTest
 {
-    public static void neuralNetwork(File dataFile, int epochs)
+    public static void neuralNetwork(File trainData, File testData, int epochs, double learningRate)
     {
-        Map<String, int[]> pixels = loadData(dataFile, 49);
+        System.out.println("Training data file: " + trainData.getAbsolutePath());
+        List<InputVector> data = loadData(trainData, 49);
+
+        System.out.println("Testing data file: " + testData.getAbsolutePath());
+        List<InputVector> testingData = loadData(testData, 49);
 
 
         double[] hiddenNodes = new double[9];
-        double[] hiddenNodeWeights = new double[9];
+        double[][] hiddenNodeWeights = new double[49][9];
 
         double[] resultNodes = new double[10];
-        double[] resultNodeWeights = new double[10];
+        double[][] resultNodeWeights = new double[9][10];
 
         //populate the hidden nodes with weights
         populateWeights(hiddenNodeWeights);
         populateWeights(resultNodeWeights);
 
-        //train all the hidden nodes
-        for(int training = 0; training < epochs; training++) {
-            //for every input vector of pixels values, train the hidden layer
-            for (int hidden = 0; hidden < hiddenNodes.length; hidden++) {
-                double sum = 0.0;
+        //set values for hidden nodes
+        System.out.println("Starting hidden node weights: " + Arrays.toString(hiddenNodeWeights[43]));
 
-                for (int[] input : pixels.values()) {
-                    for (int pixel = 0; pixel < input.length; pixel++) {
-                        sum += input[pixel] * hiddenNodeWeights[hidden];
+        for(int training = 0; training < epochs; training++)
+        {
+            for(InputVector input : data)
+            {
+                //train hidden layer
+                for(int hidden = 0; hidden < hiddenNodes.length; hidden++)
+                {
+                    double sum = 0;
+
+                    for(int pixel = 0; pixel < input.getData().length; pixel++)
+                    {
+                        sum += input.getData()[pixel] * hiddenNodeWeights[pixel][hidden];
+                    }
+
+                    hiddenNodes[hidden] = sigmoid(sum);
+                }
+
+                //train result nodes
+                for(int result = 0; result < resultNodes.length; result++)
+                {
+                    double sum = 0;
+
+                    for(int hidden = 0; hidden < hiddenNodes.length; hidden++)
+                    {
+                        sum += hiddenNodes[hidden] * resultNodeWeights[hidden][result];
+                    }
+
+                    resultNodes[result] = sigmoid(sum);
+                }
+
+
+                //learn via back propigation
+                double[] actual = {0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0};
+                actual[Integer.parseInt(input.getTarget())] = 1.0;
+
+                double[] resultErrors = new double[resultNodes.length];
+                double[] hiddenErrors = new double[hiddenNodes.length];
+
+                //calculate result node errors
+                for(int result = 0; result < resultErrors.length; result++)
+                {
+                    resultErrors[result] = resultNodes[result] * (1 - resultNodes[result]) * (actual[result] - resultNodes[result]);
+                }
+
+                //calculate hidden node errors
+                for(int hidden = 0; hidden < hiddenErrors.length; hidden++)
+                {
+                    double errorSum = 0.0;
+
+                    for(int result = 0; result < resultErrors.length; result++)
+                    {
+                        errorSum += resultErrors[result] * resultNodeWeights[hidden][result];
+                    }
+
+                    hiddenErrors[hidden] = hiddenNodes[hidden] * (1.0 - hiddenNodes[hidden]) * errorSum;
+                }
+
+
+                //adjust weights from hidden to result
+                for(int hidden = 0; hidden < hiddenNodes.length; hidden++)
+                {
+                    for(int result = 0; result < resultNodes.length; result++)
+                    {
+                        resultNodeWeights[hidden][result] = resultNodeWeights[hidden][result] + learningRate * resultErrors[result] * hiddenNodes[hidden];
                     }
                 }
-                hiddenNodes[hidden] = sigmoid(sum /*sum of every value of input * hiddenNodes[hidden]*/);
 
+                //adjust weights from input to hidden
+                for(int inputNode = 0; inputNode < input.getData().length; inputNode++)
+                {
+                   // System.out.println("\n\n" + inputNode + "\n\n");
+                    for(int hidden = 0; hidden < hiddenNodes.length; hidden++)
+                    {
+                        hiddenNodeWeights[inputNode][hidden] = hiddenNodeWeights[inputNode][hidden] + learningRate * hiddenErrors[hidden] * input.getData()[inputNode];
+                        double delta = learningRate * hiddenErrors[hidden] * input.getData()[inputNode];
+                        //System.out.println(delta);
+                    }
+
+
+                }
+                //System.out.println("Ending hidden node weights:   " + Arrays.toString(hiddenNodeWeights[43]));
+
+
+                //debug
+                //return;
             }
 
-            System.out.println("Hidden node values after " + epochs + " epochs: " + Arrays.toString(hiddenNodes));
 
 
 
-            //train all the result nodes
-            for(int result = 0; result < resultNodes.length; result++)
-            {
-                double sum = 0.0;
+            //at the end of each epoch evaluate result nodes vs input
+            double correctCount = 0;
+            double incorrectCount = 0;
 
-                for(int i = 0; i < hiddenNodes.length; i++)
-                {
-                    sum += hiddenNodes[i] * resultNodeWeights[result];
+            //train hidden layer
+            for(InputVector input : testingData) {
+                for (int hidden = 0; hidden < hiddenNodes.length; hidden++) {
+                    double sum = 0;
+
+                    for (int pixel = 0; pixel < input.getData().length; pixel++) {
+                        sum += input.getData()[pixel] * hiddenNodeWeights[pixel][hidden];
+                    }
+
+                    hiddenNodes[hidden] = sigmoid(sum);
                 }
 
-                resultNodes[result] = sum;
+                //train result nodes
+                for (int result = 0; result < resultNodes.length; result++) {
+                    double sum = 0;
+
+                    for (int hidden = 0; hidden < hiddenNodes.length; hidden++) {
+                        sum += hiddenNodes[hidden] * resultNodeWeights[hidden][result];
+                    }
+
+                    resultNodes[result] = sigmoid(sum);
+                }
+
+
+                //character that is in the picture
+                int actual = Integer.parseInt(input.getTarget());
+
+                //list of guesses the network made
+                List<Integer> output = new ArrayList<Integer>();
+
+                //loop through result nodes
+                for(int result = 0; result < 10; result++)
+                {
+                    //if value is greater than .5, its a yes
+                    if(resultNodes[result] >= .5)
+                    {
+                        output.add(result);
+                    }
+                }
+
+                //if there is only 1 guess and its equal to the real value, its correct
+                if(output.size() == 1 && output.get(0) == actual)
+                {
+                    correctCount++;
+                }
+                else
+                {
+                    incorrectCount++;
+                }
+
+                //compute success rate
+
             }
 
-            System.out.println("Result node values after " + epochs + " epochs: " + Arrays.toString(resultNodes));
+            double errorRate = 1 - (correctCount / (correctCount + incorrectCount));
+
+            System.out.println("After epoch " + training + "   Error rate: " + errorRate * 100 + "%");
+
         }
+
     }
 
     static double sigmoid(double v)
@@ -69,20 +197,31 @@ public class CustomClassifyTest
         return 1 / (1 + Math.pow(Math.E, -v));
     }
 
-    static void populateWeights(double[] hiddenNodes)
+    static void populateWeights(double[] nodes)
     {
-        for(int i = 0; i < hiddenNodes.length; i++)
+        for(int i = 0; i < nodes.length; i++)
         {
-            hiddenNodes[i] = (Math.random() * 0.0005);
+            nodes[i] = (Math.random() * 0.000005);
+        }
+    }
+
+    static void populateWeights(double[][] nodes)
+    {
+        for(int i = 0; i < nodes[0].length; i++)
+        {
+            for(int j = 0; j < nodes.length; j++)
+            {
+                nodes[j][i] = (Math.random() * 0.000005);
+            }
         }
     }
 
     /*
         Arguments: Data file, pixels per image
      */
-    static Map<String, int[]> loadData(File dataFile, int pixelCount)
+    static List<InputVector> loadData(File dataFile, int pixelCount)
     {
-        Map<String, int[]> result = new HashMap<String, int[]>();
+        List<InputVector> result = new ArrayList<InputVector>();
 
         try
         {
@@ -99,7 +238,7 @@ public class CustomClassifyTest
                     pixels[i] = Integer.parseInt(values[i]);
                 }
 
-                result.put(values[values.length - 1], pixels);
+                result.add(new InputVector(values[values.length - 1], pixels));
             }
         }
         catch (IOException e)
@@ -107,6 +246,7 @@ public class CustomClassifyTest
             e.printStackTrace();
         }
 
+        System.out.println("Generated list of InputVector of size " + result.size());
         return result;
     }
 }
