@@ -1,6 +1,7 @@
 package net.cliffanderson.handwriting;
 
-import net.cliffanderson.classifytest.CustomClassifyTest;
+import net.cliffanderson.classifytest.obj.DataSet;
+import net.cliffanderson.classifytest.obj.NeuralNetwork;
 import org.apache.commons.io.FileUtils;
 
 import javax.imageio.ImageIO;
@@ -47,7 +48,7 @@ public class HandwritingRecognition {
                 new File(USER_HOME + File.separator + "handwriting-test-images"),
                 false,
                 false);
-        */
+
 
         try {
             //createDataFile(TEST_IMAGES, TEST_LABELS, new File(USER_HOME + File.separator + "desktop" + File.separator + "testingData.txt"));
@@ -56,7 +57,15 @@ public class HandwritingRecognition {
                   200, 0.1);
         } catch (Exception e) {
             e.printStackTrace();
-        }
+        }*/
+
+        File trainingData = new File(USER_HOME + File.separator + "desktop" + File.separator + "trainingData.txt");
+        File testingData =  new File(USER_HOME + File.separator + "desktop" + File.separator + "testingData.txt");
+
+        DataSet training = new DataSet(trainingData, 49);
+        DataSet testing = new DataSet(testingData, 49);
+
+        NeuralNetwork network = new NeuralNetwork(training, testing, 0.2, new int[]{9}, 10);
 
     }
 

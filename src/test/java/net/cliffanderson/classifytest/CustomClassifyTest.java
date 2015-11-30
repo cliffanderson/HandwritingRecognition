@@ -1,13 +1,6 @@
 package net.cliffanderson.classifytest;
 
-import jdk.internal.util.xml.impl.Input;
-import net.cliffanderson.classifytest.obj.InputVector;
-
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.*;
 
 /**
  * Created by andersonc12 on 11/6/2015.
@@ -16,6 +9,8 @@ public class CustomClassifyTest
 {
     public static void neuralNetwork(File trainData, File testData, int epochs, double learningRate)
     {
+
+/*
         System.out.println("Training data file: " + trainData.getAbsolutePath());
         List<InputVector> data = loadData(trainData, 49);
 
@@ -188,9 +183,7 @@ public class CustomClassifyTest
 
             System.out.println("After epoch " + training + "   Error rate: " + errorRate * 100 + "%");
 
-        }
+        }*/
 
     }
-
-
 }

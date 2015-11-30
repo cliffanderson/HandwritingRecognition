@@ -1,5 +1,10 @@
 package net.cliffanderson.classifytest.obj;
 
+import net.cliffanderson.classifytest.obj.node.HiddenNode;
+import net.cliffanderson.classifytest.obj.node.InputNode;
+import net.cliffanderson.classifytest.obj.node.Node;
+import net.cliffanderson.classifytest.obj.node.ResultNode;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -8,18 +13,31 @@ import java.util.List;
  */
 public class NeuralNetwork
 {
-    private List<Node> resultNodes;
-    private List<List<Node>> hiddenLayerList;
-    private List<Node> inputNodes;
+    public enum Mode
+    {
+        TRAIN, TEST;
+    }
+
+    public Mode mode;
+    private List<ResultNode> resultNodes;
+    private List<List<HiddenNode>> hiddenLayerList;
+    private List<InputNode> inputNodes;
 
     //number of inputs in the training set
-    private int trainingParameters;
+    private int parameters;
 
-    //the current input vector
-    private int vectorCount;
+    //the current input vectors
+    private int trainingVectorCount;
+    private int testingVectorCount;
 
     //training set
     private DataSet trainingSet;
+
+    //testing set
+    private DataSet testingSet;
+
+    //learning rate
+    private double learningRate;
 
     /*
     trainingSet: set for training the network
@@ -29,7 +47,13 @@ public class NeuralNetwork
     classes: the number of classification classes
      */
     public NeuralNetwork(DataSet trainingSet, DataSet testingSet, double learningRate, int[] hiddenlayers, int classes) {
-        //check parameters
+        //check number of parameters
+        if(trainingSet.getParameters() != testingSet.getParameters())
+        {
+            System.err.println("Number of training set parameters and testing set parameters must be the same!");
+            return;
+        }
+        //check learning rate
         if(learningRate <= 0.0 || learningRate >= 1.0)
         {
             System.err.println("Learning rate must be between 0 and 1");
@@ -37,6 +61,12 @@ public class NeuralNetwork
         }
 
         //check hidden layers
+        if(hiddenlayers.length == 0)
+        {
+            System.err.println("Must have at least one hidden layer");
+            return;
+        }
+
         for(int i : hiddenlayers)
         {
             if(i <= 0)
@@ -54,46 +84,26 @@ public class NeuralNetwork
         }
 
         this.trainingSet = trainingSet;
-        this.trainingParameters = this.trainingSet.getParameters();
+        this.testingSet = testingSet;
+        this.parameters = trainingSet.getParameters();
+
+        this.learningRate = learningRate;
 
 
-        createNetwork(trainingSet.getParameters(), hiddenlayers, classes);
+        createNetwork(hiddenlayers, classes);
     }
 
-    private void createNetwork(int parameters, int[] hiddenlayers, int classes)
+    private void createNetwork(int[] hiddenlayers, int classes)
     {
-        resultNodes = new ArrayList<Node>();
-        hiddenLayerList = new ArrayList<List<Node>>();
-        inputNodes = new ArrayList<Node>();
+        resultNodes = new ArrayList<ResultNode>();
+        hiddenLayerList = new ArrayList<List<HiddenNode>>();
+        inputNodes = new ArrayList<InputNode>();
 
         //make result nodes
         for(int i = 0; i < classes; i++)
         {
-            resultNodes.add(new Node(this));
+            resultNodes.add(new ResultNode(this));
         }
-
-        //make input nodes
-        for(int i = 0; i < parameters; i++)
-        {
-            inputNodes.add(new Node(this));
-        }
-
-
-        //if there are no hidden nodes, connect result to input and be done
-        if(hiddenlayers.length == 0)
-        {
-            for(int result = 0; result < classes; result++)
-            {
-                for(int input = 0; input < parameters; input++)
-                {
-                    resultNodes.get(result).addInput(inputNodes.get(input));
-                }
-            }
-
-            return;
-        }
-
-
 
         //generate hidden layers
         for(int i = 0; i < hiddenlayers.length; i++)
@@ -102,13 +112,18 @@ public class NeuralNetwork
             {
                 if(hiddenLayerList.get(i) == null)
                 {
-                    hiddenLayerList.add(new ArrayList<Node>());
+                    hiddenLayerList.add(new ArrayList<HiddenNode>());
                 }
 
-                hiddenLayerList.get(i).add(new Node(this));
+                hiddenLayerList.get(i).add(new HiddenNode(this));
             }
         }
 
+        //make input nodes
+        for(int i = 0; i < this.parameters; i++)
+        {
+            inputNodes.add(new InputNode(this));
+        }
 
 
         //connect result nodes to first layer of hidden nodes
@@ -148,11 +163,118 @@ public class NeuralNetwork
     {
        for(int input = 0; input < this.trainingSet.getSize(); input++)
        {
+           //update all node outputs
+           this.mode = Mode.TRAIN;
+           for(int result = 0; result < this.resultNodes.size(); result++)
+           {
+               this.resultNodes.get(result).calculateOutput();
+           }
+
+
+           //learn
+
+           //used for determining the result node errors
+           double[] actual = new double[this.resultNodes.size()];
+           actual[this.trainingSet.getInputVector(input).getTarget()] = 1.0;
+
+           //calculate the result node errors
+           for(int result = 0; result < this.resultNodes.size(); result++)
+           {
+               resultNodes.get(result).setError(resultNodes.get(result).getOutput() * (1 - resultNodes.get(result).getOutput()) * (actual[result] - resultNodes.get(result).getOutput()));
+           }
+
+
+           //calculate all hidden node errors
+
+           //calculate result node's children's errors
+           for(int result = 0; result < this.resultNodes.size(); result++)
+           {
+               resultNodes.get(result).calculateChildrensErrors();
+           }
+
+           //calculate all hidden node's children's errors
+           for(int layer = 0; layer < hiddenLayerList.size(); layer++)
+           {
+               for(int hidden = 0; hidden < hiddenLayerList.get(layer).size(); hidden++)
+               {
+                   hiddenLayerList.get(layer).get(hidden).calculateChildrensErrors();
+               }
+           }
+
+
+
+           //calculate and assign new weights
+
+           //calculate and assign new weights for result nodes
+           for(int result = 0; result < this.resultNodes.size(); result++)
+           {
+               resultNodes.get(result).calculateWeights();
+           }
+
+           //calculate and assign new weights for hidden nodes
+           for(int layer = 0; layer < hiddenLayerList.size(); layer++)
+           {
+               for(int hidden = 0; hidden < hiddenLayerList.get(layer).size(); hidden++)
+               {
+                   hiddenLayerList.get(layer).get(hidden).calculateWeights();
+               }
+           }
+
+
+
 
        }
     }
 
-    //n - the node calling this function
+    double getErrorRate()
+    {
+        double correctCount = 0;
+        double incorrectCount = 0;
+
+        this.mode = Mode.TEST;
+        for(int input = 0; input < this.testingSet.getSize(); input++)
+        {
+            InputVector currentInput = this.testingSet.getInputVector(input);
+
+            //run all values through
+            for(int result = 0; result < this.resultNodes.size(); result++)
+            {
+                this.resultNodes.get(result).calculateOutput();
+            }
+
+            //correct class
+            int actual = currentInput.getTarget();
+
+            //all guessed classes
+            List<Integer> guesses = new ArrayList<Integer>();
+
+            //add all guesses to list
+            for(int result = 0; result < this.resultNodes.size(); result++)
+            {
+                if(this.resultNodes.get(result).getOutput() >= .5)
+                {
+                    guesses.add(result);
+                }
+            }
+
+            //if only 1 guess and its correct we have a success, otherwise a failure
+            if(guesses.size() == 1 && guesses.get(0) == actual)
+            {
+                correctCount++;
+            }
+            else
+            {
+                incorrectCount++;
+            }
+        }
+
+        double errorRate = 1 - (correctCount / (correctCount + incorrectCount));
+
+        return errorRate;
+    }
+
+    //n - the node calling this function (must be an input node)
+    //this function is for input nodes getting data from the data set
     public double getInputValue(Node n)
     {
         int index = this.inputNodes.indexOf(n);
@@ -163,22 +285,44 @@ public class NeuralNetwork
             return 0;
         }
 
-        if(index == trainingParameters - 1)
-        {
-            double result = this.trainingSet.getInputVector(this.vectorCount).getData()[index];
+        if(this.mode == Mode.TRAIN) {
+            if (index == parameters - 1) {
+                double result = this.trainingSet.getInputVector(this.trainingVectorCount).getData()[index];
 
-            //roll over to next vector
-            this.vectorCount++;
+                //roll over to next vector
+                this.trainingVectorCount++;
 
-            if(this.vectorCount > this.trainingSet.getSize())
-            {
-                this.vectorCount = 0;
+                if (this.trainingVectorCount > this.trainingSet.getSize()) {
+                    this.trainingVectorCount = 0;
+                }
+
+                return result;
             }
 
-            return result;
+            return this.trainingSet.getInputVector(this.trainingVectorCount).getData()[index];
         }
+        else
+        {
+            if (index == parameters - 1) {
+                double result = this.testingSet.getInputVector(this.testingVectorCount).getData()[index];
 
-        return this.trainingSet.getInputVector(this.vectorCount).getData()[index];
+                //roll over to next vector
+                this.testingVectorCount++;
+
+                if (this.testingVectorCount > this.testingSet.getSize()) {
+                    this.testingVectorCount = 0;
+                }
+
+                return result;
+            }
+
+            return this.testingSet.getInputVector(this.testingVectorCount).getData()[index];
+        }
+    }
+
+    public double getLearningRate()
+    {
+        return this.learningRate;
     }
 
 
