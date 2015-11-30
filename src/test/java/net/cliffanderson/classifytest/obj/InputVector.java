@@ -6,14 +6,11 @@ package net.cliffanderson.classifytest.obj;
  */
 public class InputVector
 {
-    String target;
-    int[] data;
+    private int target;
+    private int[] data;
 
-    public InputVector(String target, int[] data)
+    public InputVector(int target, int[] data)
     {
-
-
-
         this.target = target;
         this.data = data;
     }
@@ -22,7 +19,7 @@ public class InputVector
         return data;
     }
 
-    public String getTarget() {
+    public int getTarget() {
         return target;
     }
 
