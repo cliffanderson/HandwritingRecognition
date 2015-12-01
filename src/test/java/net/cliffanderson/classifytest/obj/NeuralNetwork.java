@@ -2,6 +2,7 @@ package net.cliffanderson.classifytest.obj;
 
 import net.cliffanderson.classifytest.obj.node.HiddenNode;
 import net.cliffanderson.classifytest.obj.node.InputNode;
+import net.cliffanderson.classifytest.obj.node.Node;
 import net.cliffanderson.classifytest.obj.node.ResultNode;
 
 import java.util.ArrayList;
@@ -18,7 +19,7 @@ public class NeuralNetwork
     }
 
     public Mode mode;
-    private List<ResultNode> resultNodes;
+    public List<ResultNode> resultNodes;
     private List<List<HiddenNode>> hiddenLayerList;
     private List<InputNode> inputNodes;
 
@@ -26,11 +27,11 @@ public class NeuralNetwork
     private int parameters;
 
     //the current input vectors
-    private int trainingVectorCount;
+    public int trainingVectorCount;
     private int testingVectorCount;
 
     //training set
-    private DataSet trainingSet;
+    public DataSet trainingSet;
 
     //testing set
     private DataSet testingSet;
@@ -159,7 +160,7 @@ public class NeuralNetwork
         System.out.println("Network created");
 
 
-
+/*
         for(int i = 0; i < resultNodes.size(); i++)
         {
             System.out.println("Result node " + i + " has " + resultNodes.get(i).inputs.size() + " inputs      and " + resultNodes.get(i).outputs.size() + " outputs");
@@ -176,7 +177,7 @@ public class NeuralNetwork
         for(int i = 0; i < inputNodes.size(); i++)
         {
             System.out.println("Input node " + i + " has " + inputNodes.get(i).inputs.size() + " inputs     and " + inputNodes.get(i).outputs.size() + " outputs");
-        }
+        }*/
     }
 
     //epoch many times at once
@@ -193,8 +194,11 @@ public class NeuralNetwork
     {
        for(int input = 0; input < this.trainingSet.getSize(); input++)
        {
-           //update all node outputs
+            Node.resetAllNodes();
+           System.out.println(input + "  " + this.trainingSet.getInputVector(input).getTarget());
            this.mode = Mode.TRAIN;
+
+           //update all node outputs
            for(int result = 0; result < this.resultNodes.size(); result++)
            {
                this.resultNodes.get(result).calculateOutput();
@@ -202,56 +206,22 @@ public class NeuralNetwork
 
 
 
+
+
            //learn
-
-           //used for determining the result node errors
-           double[] actual = new double[this.resultNodes.size()];
-           actual[this.trainingSet.getInputVector(input).getTarget()] = 1.0;
-
-           //calculate the result node errors
+           //calculate all errors
            for(int result = 0; result < this.resultNodes.size(); result++)
            {
-               resultNodes.get(result).setError(resultNodes.get(result).getOutput() * (1 - resultNodes.get(result).getOutput()) * (actual[result] - resultNodes.get(result).getOutput()));
+               this.resultNodes.get(result).calculateError(null); //no weights going into result nodes
            }
 
 
-           //calculate all hidden node errors
-
-           //calculate result node's children's errors
+            //calculate new weights
            for(int result = 0; result < this.resultNodes.size(); result++)
            {
-               resultNodes.get(result).calculateChildrensErrors();
+               this.resultNodes.get(result).updateWeights();
            }
 
-           //calculate all hidden node's children's errors
-           for(int layer = 0; layer < hiddenLayerList.size() - 1; layer++)
-           {
-               for(int hidden = 0; hidden < hiddenLayerList.get(layer).size(); hidden++)
-               {
-                   hiddenLayerList.get(layer).get(hidden).calculateChildrensErrors();
-               }
-           }
-
-
-
-
-
-           //calculate and assign new weights
-           //calculate and assign new weights for result nodes
-           for(int result = 0; result < this.resultNodes.size(); result++)
-           {
-               resultNodes.get(result).calculateWeights();
-           }
-
-
-           //calculate and assign new weights for hidden nodes
-           for(int layer = 0; layer < hiddenLayerList.size(); layer++)
-           {
-               for(int hidden = 0; hidden < hiddenLayerList.get(layer).size(); hidden++)
-               {
-                   hiddenLayerList.get(layer).get(0).calculateWeights();
-               }
-           }
        }
     }
 
@@ -276,7 +246,6 @@ public class NeuralNetwork
 
             //all guessed classes
             List<Integer> guesses = new ArrayList<Integer>();
-
             //add all guesses to list
             for(int result = 0; result < this.resultNodes.size(); result++)
             {

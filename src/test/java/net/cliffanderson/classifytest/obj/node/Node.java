@@ -3,32 +3,37 @@ package net.cliffanderson.classifytest.obj.node;
 import net.cliffanderson.classifytest.obj.NeuralNetwork;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Created by andersonc12 on 11/28/2015.
  */
 public abstract class Node {
+    private static Set<Node> allNodes = new HashSet<Node>();
+    public static void resetAllNodes() {
+        for(Node n : allNodes) {
+            n.reset();
+        }
+    }
     //nodes inputing to this node aka 'children'
     public List<Node> inputs;
 
     //nodes this node outputs to aka 'parents'
-    public List<Node> outputs;
+    public final List<Node> outputs;
 
     //the weights of the connections from input nodes
-    public List<Double> weights;
+    public final List<Double> weights;
 
     //output of this node
-    protected double output = 0.0;
+    protected Double output = 0.0;
 
-    //this nodes errors
+    //error
     protected double error = 0.0;
 
     //network this is a part of
-    protected NeuralNetwork network;
-
-    public Node() {
-    }
+    protected final NeuralNetwork network;
 
     public Node(NeuralNetwork network) {
         this.network = network;
@@ -37,6 +42,7 @@ public abstract class Node {
         this.outputs = new ArrayList<Node>();
 
         this.weights = new ArrayList<Double>();
+        allNodes.add(this);
     }
 
     public void addInput(Node n) {
@@ -46,16 +52,29 @@ public abstract class Node {
         n.addOutput(this);
     }
 
-    public void addOutput(Node n)
+    public void reset() {
+        this.output = null;
+    }
+
+    protected void addOutput(Node n)
     {
         this.outputs.add(n);
     }
 
+    protected double getError()
+    {
+        return this.error;
+    }
+
     public double getOutput() {
+        calculateOutput();
         return this.output;
     }
 
     public double calculateOutput() {
+        if (this.output != null) {
+            return this.output;
+        }
         //sigmoid of the sum of the inputs * their weights
         double sum = 0.0;
 
@@ -69,47 +88,22 @@ public abstract class Node {
         return this.output;
     }
 
-    public double getError()
+    public void updateWeights()
     {
-        return this.error;
-    }
-
-    public void setError(double error)
-    {
-
-        this.error = error;
-
-
-    }
-
-    public void calculateChildrensErrors()
-    {
-        for(int child = 0; child < this.inputs.size(); child++) {
-
-            Node childNode = this.inputs.get(child);
-
-            double sum = 0.0;
-
-            for(int i = 0; i < childNode.outputs.size(); i++)
-            {
-                sum += childNode.outputs.get(i).getError() * this.weights.get(child);
-            }
-
-
-            childNode.setError(childNode.getOutput() * (1.0-childNode.getOutput()) * sum);
-        }
-    }
-
-    public void calculateWeights()
-    {
-        for(int i = 0; i < this.weights.size() || i < this.inputs.size(); i++)
+        for(int i = 0; i < this.weights.size(); i++)
         {
-            double newWeight = this.weights.get(i) + (this.network.getLearningRate() * this.error * ((double) this.inputs.get(i).getOutput()));
-
-
+            double newWeight = this.weights.get(i) + this.network.getLearningRate() * this.error * this.inputs.get(i).getOutput();
             this.weights.set(i, newWeight);
         }
+
+        //update weights of inputs
+        for(Node n : this.inputs)
+        {
+            n.updateWeights();
+        }
     }
+
+    public abstract void calculateError(List<Double> weights);
 
     protected double sigmoid(double v) {
         return 1 / (1 + Math.pow(Math.E, -v));
