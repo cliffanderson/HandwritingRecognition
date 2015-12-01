@@ -5,6 +5,7 @@ import net.cliffanderson.classifytest.obj.node.InputNode;
 import net.cliffanderson.classifytest.obj.node.Node;
 import net.cliffanderson.classifytest.obj.node.ResultNode;
 
+import java.lang.reflect.Executable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -106,16 +107,16 @@ public class NeuralNetwork
         }
 
         //generate hidden layers
-        for(int i = 0; i < hiddenlayers.length; i++)
+        for(int layer = 0; layer < hiddenlayers.length; layer++)
         {
-            for(int nodes = 0; nodes < hiddenlayers[i]; nodes++)
+            for(int nodes = 0; nodes < hiddenlayers[layer]; nodes++)
             {
-                if(hiddenLayerList.get(i) == null)
+                if(hiddenLayerList.size() == layer)
                 {
                     hiddenLayerList.add(new ArrayList<HiddenNode>());
                 }
 
-                hiddenLayerList.get(i).add(new HiddenNode(this));
+                hiddenLayerList.get(layer).add(new HiddenNode(this));
             }
         }
 
@@ -156,6 +157,17 @@ public class NeuralNetwork
                 hiddenLayerList.get(hiddenLayerList.size() - 1).get(hidden).addInput(inputNodes.get(input));
             }
         }
+
+        System.out.println("Network created");
+    }
+
+    //epoch many times at once
+    public void train(int epochs)
+    {
+        for(int i = 0; i < epochs; i++)
+        {
+            this.epoch();
+        }
     }
 
     //run the entire training set through the network, using back propagation after every input vector
@@ -171,6 +183,8 @@ public class NeuralNetwork
            }
 
 
+
+
            //learn
 
            //used for determining the result node errors
@@ -182,6 +196,9 @@ public class NeuralNetwork
            {
                resultNodes.get(result).setError(resultNodes.get(result).getOutput() * (1 - resultNodes.get(result).getOutput()) * (actual[result] - resultNodes.get(result).getOutput()));
            }
+
+
+
 
 
            //calculate all hidden node errors
@@ -205,6 +222,15 @@ public class NeuralNetwork
 
            //calculate and assign new weights
 
+           //debug
+
+           for(int i = 0; i < parameters; i++)
+           {
+               System.out.print(hiddenLayerList.get(0).get(0).weights.get(i) + "  ");
+           }
+           System.out.println();
+
+
            //calculate and assign new weights for result nodes
            for(int result = 0; result < this.resultNodes.size(); result++)
            {
@@ -216,9 +242,19 @@ public class NeuralNetwork
            {
                for(int hidden = 0; hidden < hiddenLayerList.get(layer).size(); hidden++)
                {
-                   hiddenLayerList.get(layer).get(hidden).calculateWeights();
+                   hiddenLayerList.get(layer).get(0).calculateWeights();
                }
            }
+
+
+
+           //debug
+
+           for(int i = 0; i < parameters; i++){
+               System.out.print(hiddenLayerList.get(0).get(0).weights.get(i) + "  ");
+
+           }
+        //   try { Thread.sleep(1000000000);} catch (Exception e){}
 
 
 
@@ -226,7 +262,7 @@ public class NeuralNetwork
        }
     }
 
-    double getErrorRate()
+    public double getErrorRate()
     {
         double correctCount = 0;
         double incorrectCount = 0;
@@ -275,10 +311,10 @@ public class NeuralNetwork
 
     //n - the node calling this function (must be an input node)
     //this function is for input nodes getting data from the data set
-    public double getInputValue(Node n)
+    public double getInputValue(InputNode n)
     {
         int index = this.inputNodes.indexOf(n);
-
+        System.out.println("[" + trainingVectorCount + "][" + index + "]");
         if(index == -1)
         {
             System.err.println("Only input nodes can call getInputValue()");
@@ -292,7 +328,7 @@ public class NeuralNetwork
                 //roll over to next vector
                 this.trainingVectorCount++;
 
-                if (this.trainingVectorCount > this.trainingSet.getSize()) {
+                if (this.trainingVectorCount == this.trainingSet.getSize()) {
                     this.trainingVectorCount = 0;
                 }
 
@@ -309,7 +345,7 @@ public class NeuralNetwork
                 //roll over to next vector
                 this.testingVectorCount++;
 
-                if (this.testingVectorCount > this.testingSet.getSize()) {
+                if (this.testingVectorCount == this.testingSet.getSize()) {
                     this.testingVectorCount = 0;
                 }
 

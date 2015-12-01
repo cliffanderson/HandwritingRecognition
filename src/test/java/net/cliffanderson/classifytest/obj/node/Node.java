@@ -16,7 +16,7 @@ public abstract class Node {
     protected List<Node> outputs;
 
     //the weights of the connections from input nodes
-    protected List<Double> weights;
+    public List<Double> weights;
 
     //output of this node
     protected double output = 0.0;
@@ -35,6 +35,8 @@ public abstract class Node {
 
         this.inputs = new ArrayList<Node>();
         this.outputs = new ArrayList<Node>();
+
+        this.weights = new ArrayList<Double>();
     }
 
     public void addInput(Node n) {
@@ -46,7 +48,7 @@ public abstract class Node {
 
     public void addOutput(Node n)
     {
-        this.addOutput(n);
+        this.outputs.add(n);
     }
 
     public double getOutput() {

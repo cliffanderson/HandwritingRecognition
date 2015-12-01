@@ -66,6 +66,9 @@ public class HandwritingRecognition {
         DataSet testing = new DataSet(testingData, 49);
 
         NeuralNetwork network = new NeuralNetwork(training, testing, 0.2, new int[]{9}, 10);
+        network.train(2);
+
+        System.out.println("Error rate: " + network.getErrorRate() * 100 + "%");
 
     }
 

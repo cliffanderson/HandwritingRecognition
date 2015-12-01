@@ -14,6 +14,7 @@ public class InputNode extends Node
 
     @Override
     public double calculateOutput() {
-        return this.network.getInputValue(this);
+        double result = this.network.getInputValue(this);
+        return result;
     }
 }
