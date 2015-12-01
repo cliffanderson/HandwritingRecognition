@@ -60,7 +60,9 @@ public abstract class Node {
         double sum = 0.0;
 
         for (int i = 0; i < inputs.size(); i++) {
-            sum += inputs.get(i).calculateOutput() * weights.get(i);
+            double inputOutput = inputs.get(i).calculateOutput();
+            double theWeight = weights.get(i);
+            sum += inputOutput * theWeight;
         }
 
         this.output = sigmoid(sum);
@@ -74,7 +76,10 @@ public abstract class Node {
 
     public void setError(double error)
     {
+
         this.error = error;
+
+
     }
 
     public void calculateChildrensErrors()
@@ -90,7 +95,8 @@ public abstract class Node {
                 sum += childNode.outputs.get(i).getError() * this.weights.get(child);
             }
 
-            childNode.setError(childNode.getOutput() * (1 - childNode.getOutput()) * sum);
+
+            childNode.setError(childNode.getOutput() * (1.0-childNode.getOutput()) * sum);
         }
     }
 
@@ -98,7 +104,9 @@ public abstract class Node {
     {
         for(int i = 0; i < this.weights.size() || i < this.inputs.size(); i++)
         {
-            double newWeight = this.weights.get(i) + this.network.getLearningRate() * this.error * this.inputs.get(i).getOutput();
+            double newWeight = this.weights.get(i) + (this.network.getLearningRate() * this.error * ((double) this.inputs.get(i).getOutput()));
+
+
             this.weights.set(i, newWeight);
         }
     }
@@ -110,4 +118,5 @@ public abstract class Node {
     protected double generateWeight() {
         return Math.random() * 0.000005;
     }
+
 }

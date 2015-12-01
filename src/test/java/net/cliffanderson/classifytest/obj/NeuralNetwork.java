@@ -2,10 +2,8 @@ package net.cliffanderson.classifytest.obj;
 
 import net.cliffanderson.classifytest.obj.node.HiddenNode;
 import net.cliffanderson.classifytest.obj.node.InputNode;
-import net.cliffanderson.classifytest.obj.node.Node;
 import net.cliffanderson.classifytest.obj.node.ResultNode;
 
-import java.lang.reflect.Executable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -184,7 +182,6 @@ public class NeuralNetwork
 
 
 
-
            //learn
 
            //used for determining the result node errors
@@ -198,9 +195,6 @@ public class NeuralNetwork
            }
 
 
-
-
-
            //calculate all hidden node errors
 
            //calculate result node's children's errors
@@ -210,7 +204,7 @@ public class NeuralNetwork
            }
 
            //calculate all hidden node's children's errors
-           for(int layer = 0; layer < hiddenLayerList.size(); layer++)
+           for(int layer = 0; layer < hiddenLayerList.size() - 1; layer++)
            {
                for(int hidden = 0; hidden < hiddenLayerList.get(layer).size(); hidden++)
                {
@@ -220,22 +214,15 @@ public class NeuralNetwork
 
 
 
+
+
            //calculate and assign new weights
-
-           //debug
-
-           for(int i = 0; i < parameters; i++)
-           {
-               System.out.print(hiddenLayerList.get(0).get(0).weights.get(i) + "  ");
-           }
-           System.out.println();
-
-
            //calculate and assign new weights for result nodes
            for(int result = 0; result < this.resultNodes.size(); result++)
            {
                resultNodes.get(result).calculateWeights();
            }
+
 
            //calculate and assign new weights for hidden nodes
            for(int layer = 0; layer < hiddenLayerList.size(); layer++)
@@ -245,20 +232,6 @@ public class NeuralNetwork
                    hiddenLayerList.get(layer).get(0).calculateWeights();
                }
            }
-
-
-
-           //debug
-
-           for(int i = 0; i < parameters; i++){
-               System.out.print(hiddenLayerList.get(0).get(0).weights.get(i) + "  ");
-
-           }
-        //   try { Thread.sleep(1000000000);} catch (Exception e){}
-
-
-
-
        }
     }
 
@@ -304,7 +277,7 @@ public class NeuralNetwork
             }
         }
 
-        double errorRate = 1 - (correctCount / (correctCount + incorrectCount));
+        double errorRate = 1.0 - (correctCount / (correctCount + incorrectCount));
 
         return errorRate;
     }
@@ -314,7 +287,7 @@ public class NeuralNetwork
     public double getInputValue(InputNode n)
     {
         int index = this.inputNodes.indexOf(n);
-        System.out.println("[" + trainingVectorCount + "][" + index + "]");
+       // System.out.println("[" + trainingVectorCount + "][" + index + "]");
         if(index == -1)
         {
             System.err.println("Only input nodes can call getInputValue()");

@@ -15,6 +15,7 @@ import java.net.URL;
  * Created by andersonc12 on 9/26/2015.
  */
 public class HandwritingRecognition {
+    public static int count = 0;
     public static final String USER_HOME = System.getProperty("user.home");
 
     public static URL trainingImagesURL;
@@ -51,13 +52,16 @@ public class HandwritingRecognition {
 
 
         try {
-            //createDataFile(TEST_IMAGES, TEST_LABELS, new File(USER_HOME + File.separator + "desktop" + File.separator + "testingData.txt"));
+            createDataFile(TEST_IMAGES, TEST_LABELS, new File(USER_HOME + File.separator + "desktop" + File.separator + "testingData.txt"));
             CustomClassifyTest.neuralNetwork(new File(USER_HOME + File.separator + "desktop" + File.separator + "trainingData.txt"),
                     new File(USER_HOME + File.separator + "desktop" + File.separator + "testingData.txt"),
                   200, 0.1);
         } catch (Exception e) {
             e.printStackTrace();
         }*/
+
+       // createDataFile(TRAIN_IMAGES, TRAIN_LABELS, new File(USER_HOME + File.separator + "desktop" + File.separator + "trainingData.txt"));
+
 
         File trainingData = new File(USER_HOME + File.separator + "desktop" + File.separator + "trainingData.txt");
         File testingData =  new File(USER_HOME + File.separator + "desktop" + File.separator + "testingData.txt");
@@ -66,9 +70,12 @@ public class HandwritingRecognition {
         DataSet testing = new DataSet(testingData, 49);
 
         NeuralNetwork network = new NeuralNetwork(training, testing, 0.2, new int[]{9}, 10);
-        network.train(2);
+        while(true)
+        {
+            network.train(1);
+            System.out.println("Error rate: " + network.getErrorRate() * 100 + "%");
+        }
 
-        System.out.println("Error rate: " + network.getErrorRate() * 100 + "%");
 
     }
 
