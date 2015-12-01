@@ -157,6 +157,26 @@ public class NeuralNetwork
         }
 
         System.out.println("Network created");
+
+
+
+        for(int i = 0; i < resultNodes.size(); i++)
+        {
+            System.out.println("Result node " + i + " has " + resultNodes.get(i).inputs.size() + " inputs      and " + resultNodes.get(i).outputs.size() + " outputs");
+        }
+        System.out.println("\n\n\n\n\n");
+        for(int layer = 0; layer < hiddenLayerList.size(); layer++)
+        {
+            for(int hidden = 0; hidden < hiddenLayerList.get(layer).size(); hidden++)
+            {
+                System.out.println("Hidden node " + hidden + " on layer " + layer + " has " + hiddenLayerList.get(layer).get(hidden).inputs.size() + "inputs     and " + hiddenLayerList.get(layer).get(hidden).outputs.size() + " outputs");
+            }
+        }
+        System.out.println("\n\n\n\n\n");
+        for(int i = 0; i < inputNodes.size(); i++)
+        {
+            System.out.println("Input node " + i + " has " + inputNodes.get(i).inputs.size() + " inputs     and " + inputNodes.get(i).outputs.size() + " outputs");
+        }
     }
 
     //epoch many times at once

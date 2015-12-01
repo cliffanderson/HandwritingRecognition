@@ -10,10 +10,10 @@ import java.util.List;
  */
 public abstract class Node {
     //nodes inputing to this node aka 'children'
-    protected List<Node> inputs;
+    public List<Node> inputs;
 
     //nodes this node outputs to aka 'parents'
-    protected List<Node> outputs;
+    public List<Node> outputs;
 
     //the weights of the connections from input nodes
     public List<Double> weights;
