@@ -24,12 +24,12 @@ public class CustomClassifyTest
         double[] resultNodes = new double[10];
         double[][] resultNodeWeights = new double[9][10];
 
-        //populate the hidden nodes with weights
+        //populate the hidden nodes with inputWeights
         populateWeights(hiddenNodeWeights);
         populateWeights(resultNodeWeights);
 
         //set values for hidden nodes
-        System.out.println("Starting hidden node weights: " + Arrays.toString(hiddenNodeWeights[43]));
+        System.out.println("Starting hidden node inputWeights: " + Arrays.toString(hiddenNodeWeights[43]));
 
         for(int training = 0; training < epochs; training++)
         {
@@ -89,7 +89,7 @@ public class CustomClassifyTest
                 }
 
 
-                //adjust weights from hidden to result
+                //adjust inputWeights from hidden to result
                 for(int hidden = 0; hidden < hiddenNodes.length; hidden++)
                 {
                     for(int result = 0; result < resultNodes.length; result++)
@@ -98,7 +98,7 @@ public class CustomClassifyTest
                     }
                 }
 
-                //adjust weights from input to hidden
+                //adjust inputWeights from input to hidden
                 for(int inputNode = 0; inputNode < input.getData().length; inputNode++)
                 {
                    // System.out.println("\n\n" + inputNode + "\n\n");
@@ -111,7 +111,7 @@ public class CustomClassifyTest
 
 
                 }
-                //System.out.println("Ending hidden node weights:   " + Arrays.toString(hiddenNodeWeights[43]));
+                //System.out.println("Ending hidden node inputWeights:   " + Arrays.toString(hiddenNodeWeights[43]));
 
 
                 //debug

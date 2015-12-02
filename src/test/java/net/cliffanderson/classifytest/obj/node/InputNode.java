@@ -1,5 +1,6 @@
 package net.cliffanderson.classifytest.obj.node;
 
+import net.cliffanderson.classifytest.obj.InputVector;
 import net.cliffanderson.classifytest.obj.NeuralNetwork;
 
 /**
@@ -20,17 +21,25 @@ public class InputNode extends Node
         return this.output;
     }
 
-    //input nodes do not have weights
     @Override
-    public void updateWeights()
+    public void addToErrorSum(double errorPortion)
     {
-        return;
+        //do nothing for input nodes
     }
 
-    //do not have errors
     @Override
-    public void calculateError(double[] weights)
+    public void computeError()
     {
-        return;
+        //no error for input nodes
     }
+
+    @Override
+    public void adjustWeights()
+    {
+        //no weights to adjust for input nodes
+    }
+
+
+
+
 }

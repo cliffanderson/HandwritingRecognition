@@ -7,28 +7,60 @@ import net.cliffanderson.classifytest.obj.NeuralNetwork;
  */
 public class HiddenNode extends Node
 {
+    private double[] oldWeights;
+
     public HiddenNode(NeuralNetwork network, int inputs, int outputs)
     {
         super(network, inputs, outputs);
+        this.oldWeights = new double[inputs];
     }
 
     @Override
-    public void calculateError(double[] weights)
+    public void addToErrorSum(double errorPortion)
     {
-        if (this.errorCalculated) return;
+        this.errorSum += errorPortion;
+    }
 
-        double sum = 0.0;
-        for (int i = 0; i < weights.length; i++)
+    @Override
+    public void computeError()
+    {
+        this.error = this.getOutput() * (1 - this.getOutput()) * this.errorSum;
+        System.out.println("Hidden node error: " + this.error);
+        //call other hidden layers
+        for(Node n : this.inputs)
         {
-            sum += this.outputs[i].getError() * weights[i];
+            n.computeError();
+        }
+    }
+
+    @Override
+    public void adjustWeights()
+    {
+        for(int i = 0; i < this.inputWeights.length; i++)
+        {
+            this.inputWeights[i] = this.inputWeights[i] + this.network.getLearningRate() * this.error * this.inputs[i].getOutput();
         }
 
-        this.error = this.output * (1 - this.output) * sum;
-        this.errorCalculated = true;
-        //have inputs calculate errors
-        for (Node n : this.inputs)
+        //compare old weights and new weights to see if they changed
+        for(int i = 0; i < this.oldWeights.length; i++)
         {
-            n.calculateError(this.weights);
+            if(this.oldWeights[i] != this.inputWeights[i])
+            {
+                System.out.println("hidden node Weights changed");
+                break;
+            }
+        }
+
+        //copy new weights over old weights
+        for(int i = 0; i < this.oldWeights.length; i++)
+        {
+            this.oldWeights[i] = this.inputWeights[i];
+        }
+
+        //do this for hidden nodes below
+        for(Node n : this.inputs)
+        {
+            n.adjustWeights();
         }
     }
 }

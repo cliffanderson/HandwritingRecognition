@@ -11,30 +11,44 @@ import java.util.Set;
 public abstract class Node
 {
     private static Set<Node> allNodes = new HashSet<Node>();
-    //the weights of the connections from input nodes
-    public final double[] weights;
+
     //nodes inputing to this node aka 'children'
     protected final Node[] inputs;
+
+    //the Weights of the connections from input nodes
+    public final double[] inputWeights;
+
+
     //nodes this node outputs to aka 'parents'
     protected final Node[] outputs;
+
     //network this is a part of
     protected final NeuralNetwork network;
+
     protected boolean updatedWeights = false;
+    protected boolean errorCalculated = false;
+    protected boolean outputCalculated = false;
+
+
+    protected double errorSum = 0.0;
+
+
     //output of this node
     protected Double output = 0.0;
-    protected boolean outputCalculated = false;
+
     //error
     protected double error = 0.0;
-    protected boolean errorCalculated = false;
+
     private int inputCounter = 0;
     private int outputCounter = 0;
+
 
     public Node(NeuralNetwork network, int inputs, int outputs)
     {
         this.network = network;
 
         this.inputs = new Node[inputs];
-        this.weights = new double[inputs];
+        this.inputWeights = new double[inputs];
 
         this.outputs = new Node[outputs];
 
@@ -52,7 +66,7 @@ public abstract class Node
     public void addInput(Node n)
     {
         inputs[inputCounter] = n;
-        weights[inputCounter++] = generateWeight();
+        inputWeights[inputCounter++] = generateWeight();
 
         n.addOutput(this);
     }
@@ -66,12 +80,8 @@ public abstract class Node
 
     protected void addOutput(Node n)
     {
-        this.outputs[outputCounter++] = n;
-    }
-
-    protected double getError()
-    {
-        return this.error;
+        this.outputs[outputCounter] = n;
+        outputCounter++;
     }
 
     public double getOutput()
@@ -81,13 +91,13 @@ public abstract class Node
             return this.output;
         }
 
-        //sigmoid of the sum of the inputs * their weights
+        //sigmoid of the sum of the inputs * their inputWeights
         double sum = 0.0;
 
         for (int i = 0; i < inputs.length; i++)
         {
             double inputOutput = inputs[i].getOutput();
-            double theWeight = weights[i];
+            double theWeight = inputWeights[i];
             sum += inputOutput * theWeight;
         }
 
@@ -96,26 +106,10 @@ public abstract class Node
         return this.output;
     }
 
-    public void updateWeights()
-    {
-        if (this.updatedWeights) return;
+    protected abstract void addToErrorSum(double errorPortion);
+    protected abstract void computeError();
+    protected abstract void adjustWeights();
 
-        for (int i = 0; i < this.weights.length; i++)
-        {
-            double newWeight = this.weights[i] + this.network.getLearningRate() * this.error * this.inputs[i].getOutput();
-            this.weights[i] = newWeight;
-        }
-
-        this.updatedWeights = true;
-
-        //update weights of inputs
-        for (Node n : this.inputs)
-        {
-            n.updateWeights();
-        }
-    }
-
-    public abstract void calculateError(double[] weights);
 
     protected double sigmoid(double v)
     {

@@ -1,9 +1,6 @@
 package net.cliffanderson.classifytest.obj;
 
-import net.cliffanderson.classifytest.obj.node.HiddenNode;
-import net.cliffanderson.classifytest.obj.node.InputNode;
-import net.cliffanderson.classifytest.obj.node.Node;
-import net.cliffanderson.classifytest.obj.node.ResultNode;
+import net.cliffanderson.classifytest.obj.node.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,6 +16,7 @@ public class NeuralNetwork
     private ResultNode[] resultNodes;
     private HiddenNode[][] hiddenNodeArray;
     private InputNode[] inputNodes;
+    private ClassifyNode classifyNode;
 
     //number of inputs in the training set
     private int parameters;
@@ -107,6 +105,9 @@ public class NeuralNetwork
         hiddenNodeArray = new HiddenNode[hiddenlayers.length][];
         inputNodes = new InputNode[this.parameters];
 
+        //make classify node
+        classifyNode = new ClassifyNode(this, resultNodes.length, 0);
+
         //make result nodes
         for (int i = 0; i < classes; i++)
         {
@@ -136,6 +137,14 @@ public class NeuralNetwork
         for (int i = 0; i < this.parameters; i++)
         {
             inputNodes[i] = new InputNode(this, 0, hiddenlayers[hiddenlayers.length - 1]);
+        }
+
+
+
+        //connect result nodes to classify node
+        for(int result = 0; result < this.resultNodes.length; result++)
+        {
+            this.classifyNode.addInput(this.resultNodes[result]);
         }
 
 
@@ -187,32 +196,13 @@ public class NeuralNetwork
     {
         for (int input = 0; input < this.trainingSet.getSize(); input++)
         {
+            //set current input vector parameters
             this.inputVector = this.trainingSet.getInputVector(input);
             this.target = this.trainingSet.getInputVector(input).getTarget();
 
-            Node.resetAllNodes();
-            this.mode = Mode.TRAIN;
+            this.classifyNode.train();
 
-            //update all node outputs
-            for (int result = 0; result < this.resultNodes.length; result++)
-            {
-                this.resultNodes[result].getOutput();
-            }
-
-
-            //learn
-            //calculate all errors
-            for (int result = 0; result < this.resultNodes.length; result++)
-            {
-                this.resultNodes[result].calculateError(null); //no weights going into result nodes
-            }
-
-
-            //calculate new weights
-            for (int result = 0; result < this.resultNodes.length; result++)
-            {
-                this.resultNodes[result].updateWeights();
-            }
+            System.out.println(getErrorRate());
 
         }
     }
@@ -222,36 +212,18 @@ public class NeuralNetwork
         double correctCount = 0;
         double incorrectCount = 0;
 
-        this.mode = Mode.TEST;
         for (int input = 0; input < this.testingSet.getSize(); input++)
         {
-            InputVector currentInput = this.testingSet.getInputVector(input);
+            //set current input vector parameters
+            this.inputVector = this.testingSet.getInputVector(input);
+            this.target = this.testingSet.getInputVector(input).getTarget();
 
-            //run all values through
-            for (int result = 0; result < this.resultNodes.length; result++)
-            {
-                this.resultNodes[result].getOutput();
-            }
-
-            //correct class
-            int actual = currentInput.getTarget();
-
-            //all guessed classes
-            List<Integer> guesses = new ArrayList<Integer>();
-            //add all guesses to list
-            for (int result = 0; result < this.resultNodes.length; result++)
-            {
-                if (this.resultNodes[result].getOutput() >= .5)
-                {
-                    guesses.add(result);
-                }
-            }
-
-            //if only 1 guess and its correct we have a success, otherwise a failure
-            if (guesses.size() == 1 && guesses.get(0) == actual)
+            this.classifyNode.train();
+            if(this.classifyNode.correct())
             {
                 correctCount++;
-            } else
+            }
+            else
             {
                 incorrectCount++;
             }
