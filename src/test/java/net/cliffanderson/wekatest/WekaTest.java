@@ -31,7 +31,7 @@ public class WekaTest
         NaiveBayesUpdateable nb = new NaiveBayesUpdateable();
         nb.buildClassifier(structure);
         Instance current;
-        while((current = loader.getNextInstance(structure)) != null)
+        while ((current = loader.getNextInstance(structure)) != null)
         {
             nb.updateClassifier(current);
         }
@@ -51,7 +51,7 @@ public class WekaTest
         Cobweb cw = new Cobweb();
         cw.buildClusterer(structure);
         Instance current;
-        while( (current = loader.getNextInstance(structure)) != null)
+        while ((current = loader.getNextInstance(structure)) != null)
         {
             cw.updateClusterer(current);
         }

@@ -2,20 +2,19 @@ package net.cliffanderson.classifytest.obj.node;
 
 import net.cliffanderson.classifytest.obj.NeuralNetwork;
 
-import java.util.List;
-
 /**
  * Created by Cliff on 11/30/2015.
  */
 public class InputNode extends Node
 {
-    public InputNode(NeuralNetwork network)
+    public InputNode(NeuralNetwork network, int inputs, int outputs)
     {
-        super(network);
+        super(network, inputs, outputs);
     }
 
     @Override
-    public double calculateOutput() {
+    public double getOutput()
+    {
         double result = this.network.getInputValue(this);
         this.output = result;
         return this.output;
@@ -30,7 +29,7 @@ public class InputNode extends Node
 
     //do not have errors
     @Override
-    public void calculateError(List<Double> weights)
+    public void calculateError(double[] weights)
     {
         return;
     }
