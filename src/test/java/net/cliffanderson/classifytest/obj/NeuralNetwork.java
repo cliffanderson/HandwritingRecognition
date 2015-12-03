@@ -7,7 +7,6 @@ import net.cliffanderson.classifytest.obj.node.*;
  */
 public class NeuralNetwork
 {
-    public Mode mode;
     //training set
     public DataSet trainingSet;
     private ResultNode[] resultNodes;
@@ -133,7 +132,7 @@ public class NeuralNetwork
         //make input nodes
         for (int i = 0; i < this.parameters; i++)
         {
-            inputNodes[i] = new InputNode(this, 0, hiddenlayers[hiddenlayers.length - 1]);
+            inputNodes[i] = new InputNode(this, 0, hiddenlayers[hiddenlayers.length - 1], i);
         }
 
 
@@ -197,45 +196,45 @@ public class NeuralNetwork
             this.inputVector = this.trainingSet.getInputVector(input);
             this.target = this.trainingSet.getInputVector(input).getTarget();
 
+            this.classifyNode.train();
+/*
             //calculate outputs
             System.out.println("Calculating output for digit " + this.target);
             this.classifyNode.calculateOutputs();
-            System.out.println("Result layer outputs: ");
-            for(Node n : this.resultNodes) System.out.print(n.getOutput() + " ");
+            System.out.println("Hidden layer outputs: ");
+            for(Node n : this.hiddenNodeArray[0]) System.out.print(n.getOutput() + " ");
             System.out.println("\n");
 
             //calculate errors
             classifyNode.computeErrorSums();; classifyNode.computeErrors();
-            System.out.println("Result layer errors: ");
-            for(Node n : this.resultNodes) System.out.print(n.error + " ");
+            System.out.println("Hidden layer errors: ");
+            for(Node n : this.hiddenNodeArray[0]) System.out.print(n.error + " ");
             System.out.println("\n");
 
 
 
             //update weights
             classifyNode.adjustAllWeights();
+            //gotta reset them now
+            Node.resetAllNodes();
 
 
 
             //recalculate outputs
             System.out.println("Calculating output for digit " + this.target);
             this.classifyNode.calculateOutputs();
-            System.out.println("Result layer outputs: ");
-            for(Node n : this.resultNodes) System.out.print(n.getOutput() + " ");
+            System.out.println("Hidden layer outputs: ");
+            for(Node n : this.hiddenNodeArray[0]) System.out.print(n.getOutput() + " ");
             System.out.println("\n");
 
             //recalculate errors
             classifyNode.computeErrorSums();; classifyNode.computeErrors();
-            System.out.println("Result layer errors: ");
-            for(Node n : this.resultNodes) System.out.print(n.error + " ");
+            System.out.println("Hidden layer errors: ");
+            for(Node n : this.hiddenNodeArray[0]) System.out.print(n.error + " ");
             System.out.println("\n");
 
 
-            System.exit(0);
-
-
-           // System.out.println(getErrorRate());
-
+            System.exit(0);*/
         }
     }
 
@@ -251,6 +250,7 @@ public class NeuralNetwork
             this.target = this.testingSet.getInputVector(input).getTarget();
 
             this.classifyNode.train();
+            System.out.println(this.classifyNode.correct());
             if(this.classifyNode.correct())
             {
                 correctCount++;
@@ -266,65 +266,9 @@ public class NeuralNetwork
         return errorRate;
     }
 
-    //n - the node calling this function (must be an input node)
-    //this function is for input nodes getting data from the data set
-    public double getInputValue(InputNode n)
-    {/*
-        int index = this.inputNodes.indexOf(n);
-       // System.out.println("[" + trainingVectorCount + "][" + index + "]");
-        if(index == -1)
-        {
-            System.err.println("Only input nodes can call getInputValue()");
-            return 0;
-        }
-
-        if(this.mode == Mode.TRAIN) {
-            if (index == parameters - 1) {
-                double result = this.trainingSet.getInputVector(this.trainingVectorCount).getData()[index];
-
-                //roll over to next vector
-                this.trainingVectorCount++;
-
-                if (this.trainingVectorCount == this.trainingSet.getSize()) {
-                    this.trainingVectorCount = 0;
-                }
-
-                return result;
-            }
-
-            return this.trainingSet.getInputVector(this.trainingVectorCount).getData()[index];
-        }
-        else
-        {
-            if (index == parameters - 1) {
-                double result = this.testingSet.getInputVector(this.testingVectorCount).getData()[index];
-
-                //roll over to next vector
-                this.testingVectorCount++;
-
-                if (this.testingVectorCount == this.testingSet.getSize()) {
-                    this.testingVectorCount = 0;
-                }
-
-                return result;
-            }
-
-            return this.testingSet.getInputVector(this.testingVectorCount).getData()[index];
-        }
-
-    */
-        return 0;
-    }
-
     public double getLearningRate()
     {
         return this.learningRate;
     }
-
-    public enum Mode
-    {
-        TRAIN, TEST;
-    }
-
 
 }

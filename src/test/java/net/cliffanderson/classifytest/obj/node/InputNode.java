@@ -8,17 +8,18 @@ import net.cliffanderson.classifytest.obj.NeuralNetwork;
  */
 public class InputNode extends Node
 {
-    public InputNode(NeuralNetwork network, int inputs, int outputs)
+    private int id;
+    public InputNode(NeuralNetwork network, int inputs, int outputs, int id)
     {
         super(network, inputs, outputs);
+        this.id = id;
     }
+
 
     @Override
     public double getOutput()
     {
-        double result = this.network.getInputValue(this);
-        this.output = result;
-        return this.output;
+        return this.network.getInputVector().getData()[this.id];
     }
 
     @Override

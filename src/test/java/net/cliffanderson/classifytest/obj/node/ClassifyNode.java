@@ -20,16 +20,17 @@ public class ClassifyNode extends Node
         Node.resetAllNodes();
 
         //step 1: calculate outputs for all nodes in network (done recursively)
-
+        this.calculateOutputs();
 
         //step 2: compute error sums of all nodes
 
+        this.computeErrorSums();
 
         //step 3: compute errors for all nodes in the network
-
+        this.computeErrors();
 
         //step 4: adjust the weights for all nodes in the network
-
+        this.adjustAllWeights();
     }
 
     public void calculateOutputs()
