@@ -2,9 +2,6 @@ package net.cliffanderson.classifytest.obj;
 
 import net.cliffanderson.classifytest.obj.node.*;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * Created by andersonc12 on 11/27/2015.
  */
@@ -200,9 +197,44 @@ public class NeuralNetwork
             this.inputVector = this.trainingSet.getInputVector(input);
             this.target = this.trainingSet.getInputVector(input).getTarget();
 
-            this.classifyNode.train();
+            //calculate outputs
+            System.out.println("Calculating output for digit " + this.target);
+            this.classifyNode.calculateOutputs();
+            System.out.println("Result layer outputs: ");
+            for(Node n : this.resultNodes) System.out.print(n.getOutput() + " ");
+            System.out.println("\n");
 
-            System.out.println(getErrorRate());
+            //calculate errors
+            classifyNode.computeErrorSums();; classifyNode.computeErrors();
+            System.out.println("Result layer errors: ");
+            for(Node n : this.resultNodes) System.out.print(n.error + " ");
+            System.out.println("\n");
+
+
+
+            //update weights
+            classifyNode.adjustAllWeights();
+
+
+
+            //recalculate outputs
+            System.out.println("Calculating output for digit " + this.target);
+            this.classifyNode.calculateOutputs();
+            System.out.println("Result layer outputs: ");
+            for(Node n : this.resultNodes) System.out.print(n.getOutput() + " ");
+            System.out.println("\n");
+
+            //recalculate errors
+            classifyNode.computeErrorSums();; classifyNode.computeErrors();
+            System.out.println("Result layer errors: ");
+            for(Node n : this.resultNodes) System.out.print(n.error + " ");
+            System.out.println("\n");
+
+
+            System.exit(0);
+
+
+           // System.out.println(getErrorRate());
 
         }
     }

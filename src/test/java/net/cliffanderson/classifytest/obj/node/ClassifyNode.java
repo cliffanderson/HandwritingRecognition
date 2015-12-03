@@ -1,6 +1,5 @@
 package net.cliffanderson.classifytest.obj.node;
 
-import net.cliffanderson.classifytest.obj.InputVector;
 import net.cliffanderson.classifytest.obj.NeuralNetwork;
 
 import java.util.ArrayList;
@@ -21,29 +20,50 @@ public class ClassifyNode extends Node
         Node.resetAllNodes();
 
         //step 1: calculate outputs for all nodes in network (done recursively)
+
+
+        //step 2: compute error sums of all nodes
+
+
+        //step 3: compute errors for all nodes in the network
+
+
+        //step 4: adjust the weights for all nodes in the network
+
+    }
+
+    public void calculateOutputs()
+    {
         for(Node n : this.inputs)
         {
             n.getOutput();
         }
+    }
 
-        //step 2: compute error sums of all nodes
+    public void computeErrorSums()
+    {
         for(int i = 0; i < this.inputs.length; i++)
         {
             this.inputs[i].addToErrorSum(this.network.getTarget() == i ? 1 : 0);
         }
+    }
 
-        //step 3: compute errors for all nodes in the network
+    public void computeErrors()
+    {
         for(Node n : this.inputs)
         {
             n.computeError();
         }
+    }
 
-        //step 4: adjust the weights for all nodes in the network
+    public void adjustAllWeights()
+    {
         for(Node n : this.inputs)
         {
             n.adjustWeights();
         }
     }
+
 
     public boolean correct()
     {

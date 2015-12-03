@@ -37,7 +37,7 @@ public abstract class Node
     protected Double output = 0.0;
 
     //error
-    protected double error = 0.0;
+    public double error = 0.0;
 
     private int inputCounter = 0;
     private int outputCounter = 0;

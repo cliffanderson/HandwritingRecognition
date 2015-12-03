@@ -25,7 +25,7 @@ public class HiddenNode extends Node
     public void computeError()
     {
         this.error = this.getOutput() * (1 - this.getOutput()) * this.errorSum;
-        System.out.println("Hidden node error: " + this.error);
+       // System.out.println("Hidden node error: " + this.error);
         //call other hidden layers
         for(Node n : this.inputs)
         {
@@ -46,7 +46,7 @@ public class HiddenNode extends Node
         {
             if(this.oldWeights[i] != this.inputWeights[i])
             {
-                System.out.println("hidden node Weights changed");
+               // System.out.println("hidden node Weights changed");
                 break;
             }
         }
