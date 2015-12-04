@@ -1,6 +1,5 @@
 package net.cliffanderson.classifytest.obj.node;
 
-import net.cliffanderson.classifytest.obj.InputVector;
 import net.cliffanderson.classifytest.obj.NeuralNetwork;
 
 /**

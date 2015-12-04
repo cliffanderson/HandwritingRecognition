@@ -14,11 +14,10 @@ import java.util.List;
 public class DataSet
 {
     private List<InputVector> vectors;
+
+    //the number of inputs
     private int parameters;
 
-    /*
-       parameters: The number of inputs
-     */
     public DataSet(File dataFile, int parameters) {
         vectors = new ArrayList<InputVector>();
         this.parameters = parameters;

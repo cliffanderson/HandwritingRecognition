@@ -15,7 +15,6 @@ import java.net.URL;
  * Created by andersonc12 on 9/26/2015.
  */
 public class HandwritingRecognition {
-    public static int count = 0;
     public static final String USER_HOME = System.getProperty("user.home");
 
     public static URL trainingImagesURL;
@@ -28,39 +27,9 @@ public class HandwritingRecognition {
     public static File TEST_IMAGES;
     public static File TEST_LABELS;
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
         timeProgram();
         setup();
-
-
-        HandwritingRecognition hr = new HandwritingRecognition();
-
-        //training sets
-        /*
-        hr.decodeImages(new File(USER_HOME + File.separator + "dataset-images"),
-                new File(USER_HOME + File.separator + "dataset-image-labels"),
-                new File(USER_HOME + File.separator + "handwriting-images"),
-                false,
-                false);
-
-        //testing sets
-        hr.decodeImages(new File(USER_HOME + File.separator + "dataset-test-images"),
-                new File(USER_HOME + File.separator + "dataset-test-image-labels"),
-                new File(USER_HOME + File.separator + "handwriting-test-images"),
-                false,
-                false);
-
-
-        try {
-            createDataFile(TEST_IMAGES, TEST_LABELS, new File(USER_HOME + File.separator + "desktop" + File.separator + "testingData.txt"));
-            CustomClassifyTest.neuralNetwork(new File(USER_HOME + File.separator + "desktop" + File.separator + "trainingData.txt"),
-                    new File(USER_HOME + File.separator + "desktop" + File.separator + "testingData.txt"),
-                  200, 0.1);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }*/
-
-       // createDataFile(TRAIN_IMAGES, TRAIN_LABELS, new File(USER_HOME + File.separator + "desktop" + File.separator + "trainingData.txt"));
 
 
         File trainingData = new File(USER_HOME + File.separator + "desktop" + File.separator + "trainingData.txt");
@@ -73,7 +42,8 @@ public class HandwritingRecognition {
         while(true)
         {
             network.train(1);
-            System.out.println("Error rate: " + network.getErrorRate() * 100 + "%");
+            double error = network.getErrorRate();
+            System.out.println("Error rate: " + error * 100 + "%");
         }
 
 
@@ -210,31 +180,11 @@ public class HandwritingRecognition {
             labelFileIn = new FileInputStream(encodedImageLabels);
             labelIn = new DataInputStream(labelFileIn);
 
-            /*
-            if (createArffFile) {
-                //arff file setup
-                out.write("@RELATION handwriting\n");
-
-                //every pixel gets it's own attribute
-                for (int i = 0; i < 7 * 7; i++) {
-                    out.write("@ATTRIBUTE pixel" + i + " NUMERIC\n");
-                }
-                out.write("@ATTRIBUTE digit NUMERIC\n");
-
-
-                out.write("@data\n");
-            }*/
         } catch (FileNotFoundException e) {
             System.err.println("The encoded image file or the encoded label file does not exist!");
             e.printStackTrace();
             return;
-        } catch (IOException e) {
-            System.err.println("The arff file writer could not be created");
-            e.printStackTrace();
-            return;
         }
-
-        //read in all the bytes
 
         //each image is created then saved in the appropriate folder (0-9, whatever the corresponding label is
         try {
@@ -274,37 +224,6 @@ public class HandwritingRecognition {
 
                     String label = String.valueOf(labelIn.readByte());
                     ImageIO.write(image, "PNG", new File(outputDir + File.separator + label + File.separator + String.valueOf(Math.random()) + ".png"));
-
-                /*
-                if (createArffFile) {
-                    //reduce the image by a factor of 4 to dramatically reduce the size of the input to the network
-                    int[][] reducedImage = new int[7][7];
-
-                    //loop through data
-                    for (int y = 0; y < imageHeight; y++) {
-                        for (int x = 0; x < imageWidth; x++) {
-                            byte color = imageIn.readByte(); //color of this pixel
-
-                            if (color < 0) {
-                                color += 128; //we want unsigned bytes
-                            }
-
-                            //add color value to reduced image array
-                            reducedImage[x % 4][y % 4] += color;
-                        }
-                    }
-
-                    //set every color value in the reduced image to 1/4 of its current value (the average of the color values)
-                    for (int y = 0; y < imageHeight / 4; y++) {
-                        for (int x = 0; x < imageWidth / 4; x++) {
-                            out.write(String.valueOf(reducedImage[x][y] / 4) + ",");
-                        }
-                    }
-                    out.write(String.valueOf(labelIn.readByte()));
-
-                    out.write('\n');
-
-                }*/
 
                 if ((img + 1) % 1000 == 0) {
                     System.out.println((img + 1) + " images parsed");
@@ -374,7 +293,7 @@ public class HandwritingRecognition {
     }
 
     /*
-    I wonder if this works
+    Track running time
      */
     public static void timeProgram() {
         final long startTime = System.currentTimeMillis();

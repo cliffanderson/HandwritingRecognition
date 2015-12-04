@@ -2,8 +2,9 @@ package net.cliffanderson.classifytest.obj.node;
 
 import net.cliffanderson.classifytest.obj.NeuralNetwork;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.awt.*;
+import java.util.*;
+import java.util.List;
 
 /**
  * Created by andersonc12 on 11/28/2015.
@@ -34,7 +35,7 @@ public abstract class Node
 
 
     //output of this node
-    protected Double output = 0.0;
+    protected double output = 0.0;
 
     //error
     public double error = 0.0;
@@ -98,10 +99,14 @@ public abstract class Node
         {
             double inputOutput = inputs[i].getOutput();
             double theWeight = inputWeights[i];
-            sum += inputOutput * theWeight;
+            sum += (inputOutput * theWeight);
         }
 
         this.output = sigmoid(sum);
+        if(this.output == 1)
+        {
+            this.output = 0.9;
+        }
         outputCalculated = true;
         return this.output;
     }
@@ -110,7 +115,6 @@ public abstract class Node
     protected abstract void computeError();
     protected abstract void adjustWeights();
 
-
     protected double sigmoid(double v)
     {
         return 1 / (1 + Math.pow(Math.E, -v));
@@ -118,7 +122,7 @@ public abstract class Node
 
     protected double generateWeight()
     {
-        return Math.random() * 0.000005;
+        return Math.random() * 0.0000005;
     }
 
 }

@@ -8,7 +8,7 @@ import net.cliffanderson.classifytest.obj.node.*;
 public class NeuralNetwork
 {
     //training set
-    public DataSet trainingSet;
+    private DataSet trainingSet;
     private ResultNode[] resultNodes;
     private HiddenNode[][] hiddenNodeArray;
     private InputNode[] inputNodes;
@@ -26,11 +26,11 @@ public class NeuralNetwork
     private int target;
 
     /*
-    trainingSet: set for training the network
-    testingSet: set for testing the data
-    learningRate: the learning rate for the network, between 0 and 1
-    hiddenlayers: an array representing the hidden layers, where each value is the number of nodes in that layer
-    classes: the number of classification classes
+        trainingSet: set for training the network
+        testingSet: set for testing the data
+        learningRate: the learning rate for the network, between 0 and 1
+        hiddenlayers: an array representing the hidden layers, where each value is the number of nodes in that layer
+        classes: the number of classification classes
      */
     public NeuralNetwork(DataSet trainingSet, DataSet testingSet, double learningRate, int[] hiddenlayers, int classes)
     {
@@ -197,44 +197,6 @@ public class NeuralNetwork
             this.target = this.trainingSet.getInputVector(input).getTarget();
 
             this.classifyNode.train();
-/*
-            //calculate outputs
-            System.out.println("Calculating output for digit " + this.target);
-            this.classifyNode.calculateOutputs();
-            System.out.println("Hidden layer outputs: ");
-            for(Node n : this.hiddenNodeArray[0]) System.out.print(n.getOutput() + " ");
-            System.out.println("\n");
-
-            //calculate errors
-            classifyNode.computeErrorSums();; classifyNode.computeErrors();
-            System.out.println("Hidden layer errors: ");
-            for(Node n : this.hiddenNodeArray[0]) System.out.print(n.error + " ");
-            System.out.println("\n");
-
-
-
-            //update weights
-            classifyNode.adjustAllWeights();
-            //gotta reset them now
-            Node.resetAllNodes();
-
-
-
-            //recalculate outputs
-            System.out.println("Calculating output for digit " + this.target);
-            this.classifyNode.calculateOutputs();
-            System.out.println("Hidden layer outputs: ");
-            for(Node n : this.hiddenNodeArray[0]) System.out.print(n.getOutput() + " ");
-            System.out.println("\n");
-
-            //recalculate errors
-            classifyNode.computeErrorSums();; classifyNode.computeErrors();
-            System.out.println("Hidden layer errors: ");
-            for(Node n : this.hiddenNodeArray[0]) System.out.print(n.error + " ");
-            System.out.println("\n");
-
-
-            System.exit(0);*/
         }
     }
 
@@ -250,7 +212,6 @@ public class NeuralNetwork
             this.target = this.testingSet.getInputVector(input).getTarget();
 
             this.classifyNode.train();
-            System.out.println(this.classifyNode.correct());
             if(this.classifyNode.correct())
             {
                 correctCount++;
@@ -270,5 +231,4 @@ public class NeuralNetwork
     {
         return this.learningRate;
     }
-
 }
